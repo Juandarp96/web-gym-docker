@@ -4,6 +4,7 @@ pipeline {
     environment {
         BACKEND_IMAGE = 'web-gym-app-backend'
         FRONTEND_IMAGE = 'web-gym-app-frontend'
+        CODECOV_TOKEN = credentials('CODECOV_TOKEN')  // Token como credencial segura
     }
 
     stages {
@@ -40,7 +41,17 @@ pipeline {
             steps {
                 dir('Backend') {
                     bat """
-                    docker run --rm ${BACKEND_IMAGE} npm test
+                    docker run --rm ${BACKEND_IMAGE} npm test -- --coverage
+                    """
+                }
+            }
+        }
+
+        stage('Upload Coverage to Codecov') {
+            steps {
+                dir('Backend') {
+                    bat """
+                    docker run --rm -e CODECOV_TOKEN=${CODECOV_TOKEN} ${BACKEND_IMAGE} npx codecov
                     """
                 }
             }
